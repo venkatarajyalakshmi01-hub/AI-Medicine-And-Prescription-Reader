@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Prescription Result</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+
+<body>
+
+    <!-- Navbar -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            💊 AI Medicine Reminder
+        </div>
+
+        <div class="nav-links">
+
+            <a href="/">Home</a>
+
+            <a href="/dashboard">Dashboard</a>
+
+            <a href="/prescription">Prescription</a>
+
+            <a href="/medicines">My Medicines</a>
+
+            <a href="/history">History</a>
+
+            <a href="/logout">Logout</a>
+
+        </div>
+
+    </nav>
+
+
+    <!-- Main Section -->
+
+    <section class="result-section">
+
+        <div class="result-container">
+
+
+            <!-- Page Heading -->
+
+            <h1>📋 Prescription Analysis</h1>
+
+            <p class="result-description">
+
+                Please verify the extracted medicine details
+                before setting reminders.
+
+            </p>
+
+
+            <!-- OCR Text -->
+
+            <div class="result-card">
+
+                <h2>🔍 Extracted Prescription Text</h2>
+
+                <pre>{{ extracted_text }}</pre>
+
+            </div>
+
+
+            <!-- Medicine Verification -->
+
+            <div class="result-card">
+
+                <h2>💊 Verify Medicine Details</h2>
+
+                <p>
+
+                    Please check the extracted information carefully.
+                    If any detail is incorrect, do not use it for
+                    medication reminders until it is verified.
+
+                </p>
+
+
+                <div class="medicine-table-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Medicine</th>
+
+                                <th>Strength</th>
+
+                                <th>Dosage</th>
+
+                                <th>Frequency</th>
+
+                                <th>Duration</th>
+
+                                <th>Instructions</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for medicine in medicines %}
+
+                            <tr>
+
+                                <td>
+                                    {{ medicine.medicine_name }}
+                                </td>
+
+                                <td>
+                                    {{ medicine.strength }}
+                                </td>
+
+                                <td>
+                                    {{ medicine.dosage }}
+                                </td>
+
+                                <td>
+                                    {{ medicine.frequency }}
+                                </td>
+
+                                <td>
+                                    {{ medicine.duration }}
+                                </td>
+
+                                <td>
+                                    {{ medicine.instructions }}
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- Confirmation -->
+
+                <div class="verification-box">
+
+                    <h3>⚠️ Important</h3>
+
+                    <p>
+
+                        These details are extracted from the uploaded
+                        prescription using OCR and automatic text
+                        processing.
+
+                        Please verify them against the original
+                        prescription or your doctor's instructions.
+
+                    </p>
+
+                    <a href="/medicines"
+                       class="confirm-button">
+
+                        ✅ Confirm & View Medicines
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+</body>
+
+</html>

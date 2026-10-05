@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Medicine History</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+
+        .history-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 25px auto;
+            max-width: 1100px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .retention-info {
+            background: #eaf7ff;
+            padding: 12px 18px;
+            border-radius: 10px;
+            color: #176b87;
+            font-size: 14px;
+        }
+
+        .clear-history-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .clear-history-btn:hover {
+            background: #b02a37;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status.taken {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.missed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <!-- Navbar -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            💊 AI Medicine Reminder
+        </div>
+
+        <div class="nav-links">
+
+            <a href="/">Home</a>
+
+            <a href="/dashboard">Dashboard</a>
+
+            <a href="/prescription">Prescription</a>
+
+            <a href="/medicines">Medicines</a>
+
+            <a href="/reminder">Reminders</a>
+
+            <a href="/history">History</a>
+
+            <a href="/logout">Logout</a>
+
+        </div>
+
+    </nav>
+
+
+    <!-- History Section -->
+
+    <section class="history-section">
+
+        <div class="history-header">
+
+            <h1>📊 Medicine History</h1>
+
+            <p>
+                Track your medicine doses and monitor
+                taken or missed doses.
+            </p>
+
+        </div>
+
+
+        <!-- History Actions -->
+
+        <div class="history-actions">
+
+            <div class="retention-info">
+
+                🕒 History is automatically maintained
+                for the last <strong>90 days</strong>.
+
+            </div>
+
+
+            <form action="/clear-history"
+                  method="POST"
+                  onsubmit="return confirm('Are you sure you want to clear all medicine history?');">
+
+                <button type="submit"
+                        class="clear-history-btn">
+
+                    🗑 Clear History
+
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- History Table -->
+
+        <div class="history-table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Date</th>
+
+                        <th>Medicine</th>
+
+                        <th>Time</th>
+
+                        <th>Status</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for record in history %}
+
+                    <tr>
+
+                        <td>
+                            {{ record.date }}
+                        </td>
+
+
+                        <td>
+                            {{ record.medicine_name }}
+                        </td>
+
+
+                        <td>
+                            {{ record.reminder_time }}
+                        </td>
+
+
+                        <td>
+
+                            {% if record.status == "Taken" %}
+
+                                <span class="status taken">
+                                    ✓ Taken
+                                </span>
+
+                            {% elif record.status == "Missed" %}
+
+                                <span class="status missed">
+                                    ✗ Missed
+                                </span>
+
+                            {% else %}
+
+                                <span class="status">
+                                    {{ record.status }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+
+                    {% else %}
+
+                    <tr>
+
+                        <td colspan="4">
+
+                            No medicine history available yet.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+</body>
+
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<!-- ================= NAVBAR ================= -->
+
+<nav class="navbar">
+
+    <div class="logo">
+        💊 AI Medicine Reminder
+    </div>
+
+
+    <div class="nav-links">
+
+        <a href="/">Home</a>
+
+        <a href="/dashboard">Dashboard</a>
+
+        <a href="/prescription">
+            Prescription
+        </a>
+
+        <a href="/medicines">
+            Medicines
+        </a>
+
+        <a href="/reminder">
+            Reminders
+        </a>
+
+        <a href="/history">
+            History
+        </a>
+
+        <a href="/logout">
+            Logout
+        </a>
+
+    </div>
+
+</nav>
+
+
+
+<!-- ================= DASHBOARD ================= -->
+
+<section class="dashboard-section">
+
+
+    <div class="dashboard-header">
+
+        <h1>
+            Welcome, {{ session.get("user_name", "User") }} 👋
+        </h1>
+
+        <p>
+            Manage your medicines, reminders and medication history.
+        </p>
+
+    </div>
+
+
+
+    <!-- ================= STATISTICS ================= -->
+
+    <div class="dashboard-stats">
+
+
+        <!-- Medicines -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                💊
+            </div>
+
+            <div class="stat-number">
+                {{ total_medicines }}
+            </div>
+
+            <div class="stat-title">
+                Total Medicines
+            </div>
+
+        </div>
+
+
+
+        <!-- Reminders -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                ⏰
+            </div>
+
+            <div class="stat-number">
+                {{ total_reminders }}
+            </div>
+
+            <div class="stat-title">
+                Total Reminders
+            </div>
+
+        </div>
+
+
+
+        <!-- Taken -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                ✅
+            </div>
+
+            <div class="stat-number">
+                {{ total_taken }}
+            </div>
+
+            <div class="stat-title">
+                Taken Doses
+            </div>
+
+        </div>
+
+
+
+        <!-- Missed -->
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                ❌
+            </div>
+
+            <div class="stat-number">
+                {{ total_missed }}
+            </div>
+
+            <div class="stat-title">
+                Missed Doses
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- ================= QUICK ACTIONS ================= -->
+
+    <div class="dashboard-actions">
+
+        <h2>
+            Quick Actions
+        </h2>
+
+
+        <div class="action-grid">
+
+
+            <!-- Prescription -->
+
+            <a href="/prescription"
+               class="action-card">
+
+                <div class="action-icon">
+                    📋
+                </div>
+
+                <h3>
+                    Upload Prescription
+                </h3>
+
+                <p>
+                    Scan and extract medicine details
+                    from your prescription.
+                </p>
+
+            </a>
+
+
+
+            <!-- Medicines -->
+
+            <a href="/medicines"
+               class="action-card">
+
+                <div class="action-icon">
+                    💊
+                </div>
+
+                <h3>
+                    My Medicines
+                </h3>
+
+                <p>
+                    View your extracted medicine
+                    information.
+                </p>
+
+            </a>
+
+
+
+            <!-- Reminder -->
+
+            <a href="/reminder"
+               class="action-card">
+
+                <div class="action-icon">
+                    ⏰
+                </div>
+
+                <h3>
+                    Set Reminder
+                </h3>
+
+                <p>
+                    Set and manage your medicine
+                    reminders.
+                </p>
+
+            </a>
+
+
+
+            <!-- History -->
+
+            <a href="/history"
+               class="action-card">
+
+                <div class="action-icon">
+                    📊
+                </div>
+
+                <h3>
+                    Medicine History
+                </h3>
+
+                <p>
+                    Track taken and missed
+                    medicine doses.
+                </p>
+
+            </a>
+
+
+        </div>
+
+    </div>
+
+
+</section>
+
+
+</body>
+
+</html>

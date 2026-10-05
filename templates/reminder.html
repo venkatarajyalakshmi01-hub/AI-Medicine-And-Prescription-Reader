@@ -1,0 +1,2069 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Medicine Reminders</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+
+        .settings-container {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: 10px;
+        }
+
+        .settings-container select {
+            padding: 7px 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        body.dark-mode {
+            background: #121212;
+            color: #f5f5f5;
+        }
+
+        body.dark-mode .navbar {
+            background: #1e1e1e;
+        }
+
+        body.dark-mode .navbar a {
+            color: #ffffff;
+        }
+
+        body.dark-mode .logo {
+            color: #ffffff;
+        }
+
+        body.dark-mode .result-card {
+            background: #1e1e1e;
+            color: #ffffff;
+            border-color: #333;
+        }
+
+        body.dark-mode input,
+        body.dark-mode select {
+            background: #2b2b2b;
+            color: #ffffff;
+            border-color: #555;
+        }
+
+        body.dark-mode table {
+            background: #1e1e1e;
+            color: #ffffff;
+        }
+
+        body.dark-mode th {
+            background: #333333;
+        }
+
+        body.dark-mode td {
+            border-color: #444;
+        }
+
+        body.dark-mode .result-description {
+            color: #dddddd;
+        }
+
+        body.dark-mode .settings-container select {
+            background: #2b2b2b;
+            color: white;
+            border-color: #555;
+        }
+
+        #liveReminder {
+            margin-top: 25px;
+            border: 2px solid #4CAF50;
+        }
+
+        #reminderMessage {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        #reminderInstruction {
+            font-size: 16px;
+            margin: 15px 0;
+        }
+
+        .taken-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 7px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        .missed-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 7px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        .speak-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 7px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+
+        .got-it-btn {
+            background: #555;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 7px;
+            cursor: pointer;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
+
+<nav class="navbar">
+
+    <div class="logo">
+        💊 AI Medicine Reminder
+    </div>
+
+    <div class="nav-links">
+
+        <a href="/" data-i18n="home">Home</a>
+
+        <a href="/dashboard" data-i18n="dashboard">
+            Dashboard
+        </a>
+
+        <a href="/prescription" data-i18n="prescription">
+            Prescription
+        </a>
+
+        <a href="/medicines" data-i18n="medicines">
+            My Medicines
+        </a>
+
+        <a href="/history" data-i18n="history">
+            History
+        </a>
+
+        <a href="/logout" data-i18n="logout">
+            Logout
+        </a>
+
+        <div class="settings-container">
+
+            <select
+                id="languageSelect"
+                onchange="changeLanguage(this.value)"
+            >
+
+                <option value="en">🇬🇧 English</option>
+
+                <option value="te">🇮🇳 తెలుగు</option>
+
+                <option value="hi">🇮🇳 हिन्दी</option>
+
+                <option value="ta">🇮🇳 தமிழ்</option>
+
+                <option value="kn">🇮🇳 ಕನ್ನಡ</option>
+
+            </select>
+
+
+            <select
+                id="themeSelect"
+                onchange="changeTheme(this.value)"
+            >
+
+                <option value="light">
+                    ☀️ Light
+                </option>
+
+                <option value="dark">
+                    🌙 Dark
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+
+<!-- =====================================================
+     REMINDER SECTION
+===================================================== -->
+
+<section class="result-section">
+
+<div class="result-container">
+
+    <h1 data-i18n="pageTitle">
+        ⏰ Medicine Reminders
+    </h1>
+
+
+    <p
+        class="result-description"
+        data-i18n="pageDescription"
+    >
+        Manage your medicine reminders and receive
+        notifications at the scheduled time.
+    </p>
+
+
+
+    <!-- =================================================
+         SET NEW REMINDER
+    ================================================= -->
+
+    <div class="result-card">
+
+        <h2 data-i18n="setNewReminder">
+            🔔 Set New Reminder
+        </h2>
+
+
+        <form
+            action="/set-reminder"
+            method="POST"
+        >
+
+            <label data-i18n="selectMedicine">
+                💊 Select Medicine
+            </label>
+
+
+            <select
+                name="medicine_id"
+                required
+            >
+
+                <option
+                    value=""
+                    data-i18n="selectMedicineOption"
+                >
+                    -- Select Medicine --
+                </option>
+
+
+                {% for medicine in medicines %}
+
+                <option value="{{ medicine.id }}">
+
+                    {{ medicine.medicine_name }}
+
+                    {% if medicine.strength %}
+
+                        - {{ medicine.strength }}
+
+                    {% endif %}
+
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+
+            <br><br>
+
+
+            <label data-i18n="reminderTime">
+                ⏰ Reminder Time
+            </label>
+
+
+            <input
+                type="time"
+                name="reminder_time"
+                required
+            >
+
+
+            <br><br>
+
+
+            <button
+                type="submit"
+                data-i18n="setReminderButton"
+            >
+                🔔 Set Reminder
+            </button>
+             
+            
+        </form>
+
+    </div>
+
+
+
+    <!-- =================================================
+         SAVED REMINDERS
+    ================================================= -->
+
+    <div class="result-card">
+
+        <h2 data-i18n="myReminders">
+            📋 My Reminders
+        </h2>
+
+
+        {% if reminders %}
+
+        <div class="medicine-table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th data-i18n="medicine">
+                            Medicine
+                        </th>
+
+                        <th data-i18n="time">
+                            Time
+                        </th>
+
+                        <th data-i18n="instructions">
+                            Instructions
+                        </th>
+
+                        <th data-i18n="status">
+                            Status
+                        </th>
+
+                        <th data-i18n="action">
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                {% for reminder in reminders %}
+
+                <tr>
+
+                    <td>
+
+                        {{ reminder.medicine_name }}
+
+                        {% if reminder.strength %}
+
+                            <br>
+
+                            <small>
+                                {{ reminder.strength }}
+                            </small>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+                        {{ reminder.reminder_time }}
+                    </td>
+
+
+                    <td>
+
+                        {% if reminder.instructions %}
+
+                            💡 {{ reminder.instructions }}
+
+                        {% else %}
+
+                            <span data-i18n="noInstructions">
+                                No instructions available
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+                        {{ reminder.status }}
+                    </td>
+
+
+                    <td>
+
+                        <!-- TAKEN -->
+
+                        <form
+                            action="/save-history"
+                            method="POST"
+                            style="display:inline;"
+                        >
+
+                            <input
+                                type="hidden"
+                                name="medicine_id"
+                                value="{{ reminder.medicine_id }}"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="reminder_time"
+                                value="{{ reminder.reminder_time }}"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="status"
+                                value="Taken"
+                            >
+
+                            <button
+                                type="submit"
+                                class="taken-btn"
+                                data-i18n="taken"
+                            >
+                                ✅ Taken
+                            </button>
+
+                        </form>
+
+
+                        <!-- MISSED -->
+
+                        <form
+                            action="/save-history"
+                            method="POST"
+                            style="display:inline;"
+                        >
+
+                            <input
+                                type="hidden"
+                                name="medicine_id"
+                                value="{{ reminder.medicine_id }}"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="reminder_time"
+                                value="{{ reminder.reminder_time }}"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="status"
+                                value="Missed"
+                            >
+
+                            <button
+                                type="submit"
+                                class="missed-btn"
+                                data-i18n="missed"
+                            >
+                                ❌ Missed
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% else %}
+
+        <p data-i18n="noReminders">
+            No reminders have been set yet.
+        </p>
+
+        {% endif %}
+
+    </div>
+
+
+
+<!-- ================================================= 
+     LIVE REMINDER 
+================================================= -->
+
+<div 
+    id="liveReminder" 
+    class="result-card" 
+    style="display:none;"
+>
+
+    <h2 data-i18n="medicineReminder">
+        🔔 Medicine Reminder
+    </h2>
+
+    <p id="reminderMessage"></p>
+
+    <p id="reminderInstruction"></p>
+
+    <!-- Voice Button -->
+    <button 
+        type="button" 
+        class="speak-btn" 
+        onclick="speakCurrentReminder()" 
+        data-i18n="speakReminder"
+    >
+        🔊 Speak Reminder
+    </button>
+
+    <!-- Alarm Button -->
+    <button 
+        type="button" 
+        onclick="enableAlarm()"
+    >
+        🚨 Enable Alarm Sound
+    </button>
+
+    <!-- Close Reminder -->
+    <button 
+        type="button" 
+        class="got-it-btn" 
+        onclick="closeReminder()" 
+        data-i18n="gotIt"
+    >
+        ✅ Got it
+    </button>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<script>
+     let availableVoices = [];
+
+function loadVoices() {
+    availableVoices = window.speechSynthesis.getVoices();
+    console.log("Available voices:", availableVoices);
+}
+
+loadVoices();
+
+if ('speechSynthesis' in window) {
+    speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function getVoiceLanguage() {
+
+    if (currentLanguage === "te") {
+        return "te-IN";
+    }
+
+    if (currentLanguage === "hi") {
+        return "hi-IN";
+    }
+
+    if (currentLanguage === "ta") {
+        return "ta-IN";
+    }
+
+    if (currentLanguage === "kn") {
+        return "kn-IN";
+    }
+
+    return "en-IN";
+}
+
+
+function getBestVoice(language) {
+
+    if (!availableVoices.length) {
+        availableVoices = speechSynthesis.getVoices();
+    }
+
+    console.log(
+        "Requested language:",
+        language
+    );
+
+    console.log(
+        "Available voices:",
+        availableVoices
+    );
+
+
+    // Exact language match
+    let voice = availableVoices.find(v =>
+        v.lang.toLowerCase() === language.toLowerCase()
+    );
+
+
+    // Same base language match
+    if (!voice) {
+
+        const baseLanguage =
+            language.split("-")[0].toLowerCase();
+
+        voice = availableVoices.find(v =>
+            v.lang.toLowerCase().startsWith(baseLanguage)
+        );
+    }
+
+
+    // Do NOT fallback to English
+    return voice || null;
+}
+
+function speakCurrentReminder() {
+
+    if (!currentMedicine) {
+        alert("No active reminder.");
+        return;
+    }
+
+    speakReminder(
+        currentMedicine,
+        currentInstruction
+    );
+}
+
+/* =====================================================
+   TRANSLATIONS
+===================================================== */
+
+const translations = {
+
+    en: {
+
+        home: "Home",
+        dashboard: "Dashboard",
+        prescription: "Prescription",
+        medicines: "My Medicines",
+        history: "History",
+        logout: "Logout",
+
+        pageTitle: "⏰ Medicine Reminders",
+
+        pageDescription:
+            "Manage your medicine reminders and receive notifications at the scheduled time.",
+
+        setNewReminder:
+            "🔔 Set New Reminder",
+
+        selectMedicine:
+            "💊 Select Medicine",
+
+        selectMedicineOption:
+            "-- Select Medicine --",
+
+        reminderTime:
+            "⏰ Reminder Time",
+
+        setReminderButton:
+            "🔔 Set Reminder",
+
+        myReminders:
+            "📋 My Reminders",
+
+        medicine: "Medicine",
+        time: "Time",
+        instructions: "Instructions",
+        status: "Status",
+        action: "Action",
+
+        taken: "✅ Taken",
+        missed: "❌ Missed",
+
+        noInstructions:
+            "No instructions available",
+
+        noReminders:
+            "No reminders have been set yet.",
+
+        medicineReminder:
+            "🔔 Medicine Reminder",
+
+        speakReminder:
+            "🔊 Speak Reminder",
+
+        gotIt:
+            "✅ Got it",
+
+        reminderMessage:
+            "💊 Time to take",
+
+        instructionText:
+            "💡 Instructions:",
+
+        defaultInstruction:
+            "💡 Please follow your verified prescription instructions.",
+
+        noActiveReminder:
+            "No active reminder available.",
+
+        notificationTitle:
+            "💊 Medicine Reminder",
+
+        notificationBody:
+            "Time to take"
+
+    },
+
+
+    te: {
+
+        home: "హోమ్",
+        dashboard: "డాష్‌బోర్డ్",
+        prescription: "ప్రిస్క్రిప్షన్",
+        medicines: "నా మందులు",
+        history: "చరిత్ర",
+        logout: "లాగ్ అవుట్",
+
+        pageTitle:
+            "⏰ మందుల రిమైండర్లు",
+
+        pageDescription:
+            "మీ మందుల రిమైండర్లను నిర్వహించండి మరియు నిర్ణయించిన సమయంలో నోటిఫికేషన్లు పొందండి.",
+
+        setNewReminder:
+            "🔔 కొత్త రిమైండర్ సెట్ చేయండి",
+
+        selectMedicine:
+            "💊 మందును ఎంచుకోండి",
+
+        selectMedicineOption:
+            "-- మందును ఎంచుకోండి --",
+
+        reminderTime:
+            "⏰ రిమైండర్ సమయం",
+
+        setReminderButton:
+            "🔔 రిమైండర్ సెట్ చేయండి",
+
+        myReminders:
+            "📋 నా రిమైండర్లు",
+
+        medicine:
+            "మందు",
+
+        time:
+            "సమయం",
+
+        instructions:
+            "సూచనలు",
+
+        status:
+            "స్థితి",
+
+        action:
+            "చర్య",
+
+        taken:
+            "✅ తీసుకున్నాను",
+
+        missed:
+            "❌ మిస్ అయ్యింది",
+
+        noInstructions:
+            "సూచనలు అందుబాటులో లేవు",
+
+        noReminders:
+            "ఇంకా రిమైండర్లు సెట్ చేయలేదు.",
+
+        medicineReminder:
+            "🔔 మందుల రిమైండర్",
+
+        speakReminder:
+            "🔊 రిమైండర్ చెప్పండి",
+
+        gotIt:
+            "✅ సరే",
+
+        reminderMessage:
+            "💊 మందు తీసుకునే సమయం వచ్చింది",
+
+        instructionText:
+            "💡 సూచనలు:",
+
+        defaultInstruction:
+            "💡 మీ ధృవీకరించిన ప్రిస్క్రిప్షన్ సూచనలను అనుసరించండి.",
+
+        noActiveReminder:
+            "ప్రస్తుతం యాక్టివ్ రిమైండర్ లేదు.",
+
+        notificationTitle:
+            "💊 మందుల రిమైండర్",
+
+        notificationBody:
+            "మందు తీసుకునే సమయం వచ్చింది"
+
+    },
+
+
+    hi: {
+
+        home: "होम",
+        dashboard: "डैशबोर्ड",
+        prescription: "प्रिस्क्रिप्शन",
+        medicines: "मेरी दवाइयाँ",
+        history: "इतिहास",
+        logout: "लॉग आउट",
+
+        pageTitle:
+            "⏰ दवा रिमाइंडर",
+
+        pageDescription:
+            "अपनी दवा रिमाइंडर प्रबंधित करें और निर्धारित समय पर सूचनाएँ प्राप्त करें।",
+
+        setNewReminder:
+            "🔔 नया रिमाइंडर सेट करें",
+
+        selectMedicine:
+            "💊 दवा चुनें",
+
+        selectMedicineOption:
+            "-- दवा चुनें --",
+
+        reminderTime:
+            "⏰ रिमाइंडर समय",
+
+        setReminderButton:
+            "🔔 रिमाइंडर सेट करें",
+
+        myReminders:
+            "📋 मेरे रिमाइंडर",
+
+        medicine:
+            "दवा",
+
+        time:
+            "समय",
+
+        instructions:
+            "निर्देश",
+
+        status:
+            "स्थिति",
+
+        action:
+            "कार्य",
+
+        taken:
+            "✅ ली गई",
+
+        missed:
+            "❌ छूट गई",
+
+        noInstructions:
+            "कोई निर्देश उपलब्ध नहीं",
+
+        noReminders:
+            "अभी तक कोई रिमाइंडर सेट नहीं किया गया है।",
+
+        medicineReminder:
+            "🔔 दवा रिमाइंडर",
+
+        speakReminder:
+            "🔊 रिमाइंडर बोलें",
+
+        gotIt:
+            "✅ समझ गया",
+
+        reminderMessage:
+            "💊 दवा लेने का समय है",
+
+        instructionText:
+            "💡 निर्देश:",
+
+        defaultInstruction:
+            "💡 कृपया अपने सत्यापित प्रिस्क्रिप्शन निर्देशों का पालन करें।",
+
+        noActiveReminder:
+            "कोई सक्रिय रिमाइंडर उपलब्ध नहीं है।",
+
+        notificationTitle:
+            "💊 दवा रिमाइंडर",
+
+        notificationBody:
+            "दवा लेने का समय है"
+
+    },
+
+
+    ta: {
+
+        home: "முகப்பு",
+        dashboard: "டாஷ்போர்டு",
+        prescription: "மருந்துச் சீட்டு",
+        medicines: "என் மருந்துகள்",
+        history: "வரலாறு",
+        logout: "வெளியேறு",
+
+        pageTitle:
+            "⏰ மருந்து நினைவூட்டல்கள்",
+
+        pageDescription:
+            "உங்கள் மருந்து நினைவூட்டல்களை நிர்வகித்து, குறிப்பிட்ட நேரத்தில் அறிவிப்புகளைப் பெறுங்கள்.",
+
+        setNewReminder:
+            "🔔 புதிய நினைவூட்டலை அமைக்கவும்",
+
+        selectMedicine:
+            "💊 மருந்தைத் தேர்ந்தெடுக்கவும்",
+
+        selectMedicineOption:
+            "-- மருந்தைத் தேர்ந்தெடுக்கவும் --",
+
+        reminderTime:
+            "⏰ நினைவூட்டல் நேரம்",
+
+        setReminderButton:
+            "🔔 நினைவூட்டலை அமைக்கவும்",
+
+        myReminders:
+            "📋 என் நினைவூட்டல்கள்",
+
+        medicine:
+            "மருந்து",
+
+        time:
+            "நேரம்",
+
+        instructions:
+            "வழிமுறைகள்",
+
+        status:
+            "நிலை",
+
+        action:
+            "செயல்",
+
+        taken:
+            "✅ எடுத்துக்கொண்டேன்",
+
+        missed:
+            "❌ தவறிவிட்டது",
+
+        noInstructions:
+            "வழிமுறைகள் இல்லை",
+
+        noReminders:
+            "இதுவரை எந்த நினைவூட்டலும் அமைக்கப்படவில்லை.",
+
+        medicineReminder:
+            "🔔 மருந்து நினைவூட்டல்",
+
+        speakReminder:
+            "🔊 நினைவூட்டலைப் பேசவும்",
+
+        gotIt:
+            "✅ சரி",
+
+        reminderMessage:
+            "💊 மருந்து எடுத்துக்கொள்ளும் நேரம்",
+
+        instructionText:
+            "💡 வழிமுறைகள்:",
+
+        defaultInstruction:
+            "💡 உங்கள் சரிபார்க்கப்பட்ட மருந்துச் சீட்டு வழிமுறைகளைப் பின்பற்றவும்.",
+
+        noActiveReminder:
+            "செயலில் உள்ள நினைவூட்டல் இல்லை.",
+
+        notificationTitle:
+            "💊 மருந்து நினைவூட்டல்",
+
+        notificationBody:
+            "மருந்து எடுத்துக்கொள்ளும் நேரம்"
+
+    },
+
+
+    kn: {
+
+        home: "ಮುಖಪುಟ",
+        dashboard: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+        prescription: "ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್",
+        medicines: "ನನ್ನ ಔಷಧಿಗಳು",
+        history: "ಇತಿಹಾಸ",
+        logout: "ಲಾಗ್ ಔಟ್",
+
+        pageTitle:
+            "⏰ ಔಷಧಿ ನೆನಪಿಸುವಿಕೆ",
+
+        pageDescription:
+            "ನಿಮ್ಮ ಔಷಧಿ ರಿಮೈಂಡರ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ ಮತ್ತು ನಿಗದಿತ ಸಮಯದಲ್ಲಿ ಅಧಿಸೂಚನೆಗಳನ್ನು ಪಡೆಯಿರಿ.",
+
+        setNewReminder:
+            "🔔 ಹೊಸ ರಿಮೈಂಡರ್ ಹೊಂದಿಸಿ",
+
+        selectMedicine:
+            "💊 ಔಷಧಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+
+        selectMedicineOption:
+            "-- ಔಷಧಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ --",
+
+        reminderTime:
+            "⏰ ರಿಮೈಂಡರ್ ಸಮಯ",
+
+        setReminderButton:
+            "🔔 ರಿಮೈಂಡರ್ ಹೊಂದಿಸಿ",
+
+        myReminders:
+            "📋 ನನ್ನ ರಿಮೈಂಡರ್‌ಗಳು",
+
+        medicine:
+            "ಔಷಧಿ",
+
+        time:
+            "ಸಮಯ",
+
+        instructions:
+            "ಸೂಚನೆಗಳು",
+
+        status:
+            "ಸ್ಥಿತಿ",
+
+        action:
+            "ಕ್ರಿಯೆ",
+
+        taken:
+            "✅ ತೆಗೆದುಕೊಂಡಿದ್ದೇನೆ",
+
+        missed:
+            "❌ ತಪ್ಪಿಹೋಯಿತು",
+
+        noInstructions:
+            "ಯಾವುದೇ ಸೂಚನೆಗಳು ಲಭ್ಯವಿಲ್ಲ",
+
+        noReminders:
+            "ಇನ್ನೂ ಯಾವುದೇ ರಿಮೈಂಡರ್‌ಗಳನ್ನು ಹೊಂದಿಸಲಾಗಿಲ್ಲ.",
+
+        medicineReminder:
+            "🔔 ಔಷಧಿ ರಿಮೈಂಡರ್",
+
+        speakReminder:
+            "🔊 ರಿಮೈಂಡರ್ ಮಾತನಾಡಿ",
+
+        gotIt:
+            "✅ ಸರಿ",
+
+        reminderMessage:
+            "💊 ಔಷಧಿ ತೆಗೆದುಕೊಳ್ಳುವ ಸಮಯ",
+
+        instructionText:
+            "💡 ಸೂಚನೆಗಳು:",
+
+        defaultInstruction:
+            "💡 ನಿಮ್ಮ ಪರಿಶೀಲಿಸಲಾದ ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್ ಸೂಚನೆಗಳನ್ನು ಅನುಸರಿಸಿ.",
+
+        noActiveReminder:
+            "ಯಾವುದೇ ಸಕ್ರಿಯ ರಿಮೈಂಡರ್ ಲಭ್ಯವಿಲ್ಲ.",
+
+        notificationTitle:
+            "💊 ಔಷಧಿ ರಿಮೈಂಡರ್",
+
+        notificationBody:
+            "ಔಷಧಿ ತೆಗೆದುಕೊಳ್ಳುವ ಸಮಯ"
+
+    }
+
+};
+
+
+
+/* =====================================================
+   LANGUAGE
+===================================================== */
+
+let currentLanguage =
+    localStorage.getItem("language") || "en";
+
+
+function t(key) {
+
+    if (
+        translations[currentLanguage] &&
+        translations[currentLanguage][key]
+    ) {
+
+        return translations[currentLanguage][key];
+
+    }
+
+    return translations.en[key] || key;
+
+}
+
+
+function applyLanguage() {
+
+    document
+        .querySelectorAll("[data-i18n]")
+        .forEach(function(element) {
+
+            const key =
+                element.getAttribute("data-i18n");
+
+            if (
+                translations[currentLanguage] &&
+                translations[currentLanguage][key]
+            ) {
+
+                element.textContent =
+                    translations[currentLanguage][key];
+
+            }
+
+        });
+
+
+    const languageSelect =
+        document.getElementById("languageSelect");
+
+
+    if (languageSelect) {
+
+        languageSelect.value =
+            currentLanguage;
+
+    }
+
+
+    document.documentElement.lang =
+        currentLanguage;
+
+}
+
+
+function changeLanguage(language) {
+
+    currentLanguage =
+        language;
+
+    localStorage.setItem(
+        "language",
+        language
+    );
+
+    applyLanguage();
+
+
+    if (currentMedicine !== "") {
+
+        showReminder(
+            currentMedicine,
+            currentInstruction,
+            false
+        );
+
+    }
+
+}
+
+
+
+/* =====================================================
+   THEME
+===================================================== */
+
+let currentTheme =
+    localStorage.getItem("theme") || "light";
+
+
+function applyTheme() {
+
+    document.body.classList.toggle(
+        "dark-mode",
+        currentTheme === "dark"
+    );
+
+
+    const themeSelect =
+        document.getElementById("themeSelect");
+
+
+    if (themeSelect) {
+
+        themeSelect.value =
+            currentTheme;
+
+    }
+
+}
+
+
+function changeTheme(theme) {
+
+    currentTheme =
+        theme;
+
+    localStorage.setItem(
+        "theme",
+        theme
+    );
+
+    applyTheme();
+
+}
+
+
+
+/* =====================================================
+   VOICE LANGUAGE
+===================================================== */
+
+function getVoiceLanguage() {
+
+    const languages = {
+
+        en: "en-IN",
+        te: "te-IN",
+        hi: "hi-IN",
+        ta: "ta-IN",
+        kn: "kn-IN"
+
+    };
+
+    return (
+        languages[currentLanguage]
+        || "en-IN"
+    );
+
+}
+
+
+
+/* =====================================================
+   GET BEST VOICE
+===================================================== */
+
+function getBestVoice(language) {
+
+    const voices =
+        window.speechSynthesis.getVoices();
+
+
+    console.log(
+        "Available voices:",
+        voices
+    );
+
+
+    if (!voices || voices.length === 0) {
+
+        return null;
+
+    }
+
+
+    const languageCode =
+        language.toLowerCase();
+
+
+    /* Exact language match */
+
+    let voice =
+        voices.find(function(v) {
+
+            return v.lang &&
+                   v.lang.toLowerCase() ===
+                   languageCode;
+
+        });
+
+
+    if (voice) {
+
+        return voice;
+
+    }
+
+
+    /* Language starts with required code */
+
+    voice =
+        voices.find(function(v) {
+
+            return v.lang &&
+                   v.lang.toLowerCase()
+                       .startsWith(
+                           languageCode.split("-")[0]
+                       );
+
+        });
+
+
+    if (voice) {
+
+        return voice;
+
+    }
+
+
+    /* Indian English fallback */
+
+    if (languageCode === "te-in") {
+
+        voice =
+            voices.find(function(v) {
+
+                return (
+                    v.lang &&
+                    v.lang.toLowerCase() === "en-in"
+                );
+
+            });
+
+    }
+
+
+    return voice || voices[0];
+
+}
+
+
+
+/* =====================================================
+   DOM READY
+===================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        applyTheme();
+
+        applyLanguage();
+
+        /* Load browser voices */
+
+        window.speechSynthesis.getVoices();
+
+    }
+);
+
+
+
+/* =====================================================
+   VOICE LIST LOADED
+===================================================== */
+
+if (
+    "speechSynthesis" in window
+) {
+
+    window.speechSynthesis.onvoiceschanged =
+        function() {
+
+            const voices =
+                window.speechSynthesis.getVoices();
+
+            console.log(
+                "Voices loaded:",
+                voices
+            );
+
+        };
+
+}
+
+
+
+/* =====================================================
+   NOTIFICATION PERMISSION
+===================================================== */
+
+if ("Notification" in window) {
+
+    if (
+        Notification.permission === "default"
+    ) {
+
+        Notification.requestPermission()
+            .then(function(permission) {
+
+                console.log(
+                    "Notification permission:",
+                    permission
+                );
+
+            })
+            .catch(function(error) {
+
+                console.log(
+                    "Notification permission error:",
+                    error
+                );
+
+            });
+
+    }
+
+}
+
+
+
+/* =====================================================
+   REMINDER DATA FROM FLASK
+===================================================== */
+
+const reminders =
+    JSON.parse('{{ reminders | tojson | safe }}');
+
+
+console.log(
+    "REMINDERS FROM FLASK:",
+    reminders
+);
+
+
+
+/* =====================================================
+   CURRENT REMINDER
+===================================================== */
+
+let currentMedicine = "";
+
+let currentInstruction = "";
+
+
+
+/* =====================================================
+   PREVENT REPEATED REMINDERS
+===================================================== */
+
+const triggeredReminders = {};
+
+
+
+/* =====================================================
+   CHECK REMINDERS
+===================================================== */
+
+function checkReminders() {
+
+    const now =
+        new Date();
+
+
+    const hours =
+        String(
+            now.getHours()
+        ).padStart(2, "0");
+
+
+    const minutes =
+        String(
+            now.getMinutes()
+        ).padStart(2, "0");
+
+
+    const currentTime =
+        hours + ":" + minutes;
+
+
+    reminders.forEach(
+        function(reminder) {
+
+            if (
+                reminder.reminder_time ===
+                currentTime
+            ) {
+
+                const reminderKey =
+                    reminder.id +
+                    "_" +
+                    currentTime;
+
+
+                if (
+                    !triggeredReminders[
+                        reminderKey
+                    ]
+                ) {
+
+                    triggeredReminders[
+                        reminderKey
+                    ] = true;
+
+
+                    console.log(
+                        "REMINDER TRIGGERED:",
+                        reminder
+                    );
+
+
+                    showReminder(
+                        reminder.medicine_name,
+                        reminder.instructions,
+                        true
+                    );
+
+                }
+
+            }
+
+        }
+    );
+
+}
+
+
+
+/* =====================================================
+   SHOW REMINDER
+===================================================== */
+
+function showReminder(
+    medicine,
+    instructions,
+    triggerActions = true
+) {
+
+    currentMedicine =
+        medicine;
+
+    currentInstruction =
+        instructions || "";
+
+
+    const reminderBox =
+        document.getElementById(
+            "liveReminder"
+        );
+
+
+    const message =
+        document.getElementById(
+            "reminderMessage"
+        );
+
+
+    const instruction =
+        document.getElementById(
+            "reminderInstruction"
+        );
+
+
+    message.innerText =
+        t("reminderMessage") +
+        " " +
+        medicine +
+        ".";
+
+
+    if (instructions) {
+
+        instruction.innerText =
+            t("instructionText") +
+            " " +
+            instructions;
+
+    }
+    else {
+
+        instruction.innerText =
+            t("defaultInstruction");
+
+    }
+
+
+    reminderBox.style.display =
+        "block";
+
+
+    if (triggerActions) {
+
+        if (
+            "Notification" in window &&
+            Notification.permission === "granted"
+        ) {
+
+            try {
+
+                new Notification(
+                    t("notificationTitle"),
+                    {
+
+                        body:
+                            t("notificationBody") +
+                            " " +
+                            medicine +
+                            (
+                                instructions
+                                ? ". " +
+                                  instructions
+                                : ""
+                            )
+
+                    }
+                );
+
+            }
+            catch (error) {
+
+                console.log(
+                    "Notification error:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        speakReminder(
+            medicine,
+            instructions
+        );
+        startAlarm();
+    }
+
+}
+
+
+
+/* =====================================================
+   VOICE REMINDER
+===================================================== */
+
+function speakReminder(medicine, instructions) {
+
+    if (!("speechSynthesis" in window)) {
+        alert("Voice is not supported in this browser.");
+        return;
+    }
+
+    const synth = window.speechSynthesis;
+
+    synth.cancel();
+    synth.resume();
+
+    const language = getVoiceLanguage();
+
+    let reminderText = "";
+
+    if (currentLanguage === "te") {
+        reminderText = "మందు తీసుకునే సమయం వచ్చింది.";
+    } 
+    else if (currentLanguage === "hi") {
+        reminderText = "दवा लेने का समय है।";
+    } 
+    else if (currentLanguage === "ta") {
+        reminderText = "மருந்து எடுத்துக்கொள்ளும் நேரம் இது.";
+    } 
+    else if (currentLanguage === "kn") {
+        reminderText = "ಔಷಧಿ ತೆಗೆದುಕೊಳ್ಳುವ ಸಮಯ ಬಂದಿದೆ.";
+    } 
+    else {
+        reminderText = "It is time to take your medicine.";
+    }
+
+    const reminderSpeech =
+        new SpeechSynthesisUtterance(reminderText);
+
+    reminderSpeech.lang = language;
+    reminderSpeech.rate = 0.7;
+    reminderSpeech.pitch = 1;
+    reminderSpeech.volume = 1;
+
+    const localVoice = getBestVoice(language);
+
+    if (localVoice) {
+        reminderSpeech.voice = localVoice;
+    }
+
+    const medicineSpeech =
+        new SpeechSynthesisUtterance(medicine);
+
+    medicineSpeech.lang = "en-IN";
+    medicineSpeech.rate = 0.7;
+    medicineSpeech.pitch = 1;
+    medicineSpeech.volume = 1;
+
+    const englishVoice = getBestVoice("en-IN");
+
+    if (englishVoice) {
+        medicineSpeech.voice = englishVoice;
+    }
+
+    let instructionSpeech = null;
+
+    if (instructions && instructions.trim() !== "") {
+
+        let instructionText = "";
+
+        if (currentLanguage === "te") {
+            instructionText = "సూచనలు. " + instructions;
+        } 
+        else if (currentLanguage === "hi") {
+            instructionText = "निर्देश। " + instructions;
+        } 
+        else if (currentLanguage === "ta") {
+            instructionText = "வழிமுறைகள். " + instructions;
+        } 
+        else if (currentLanguage === "kn") {
+            instructionText = "ಸೂಚನೆಗಳು. " + instructions;
+        } 
+        else {
+            instructionText = "Instructions. " + instructions;
+        }
+
+        instructionSpeech =
+            new SpeechSynthesisUtterance(instructionText);
+
+        instructionSpeech.lang = language;
+        instructionSpeech.rate = 0.7;
+        instructionSpeech.pitch = 1;
+        instructionSpeech.volume = 1;
+
+        if (localVoice) {
+            instructionSpeech.voice = localVoice;
+        }
+    }
+
+    reminderSpeech.onend = function () {
+        synth.speak(medicineSpeech);
+    };
+
+    medicineSpeech.onend = function () {
+
+        if (instructionSpeech) {
+            synth.speak(instructionSpeech);
+        }
+    };
+
+    setTimeout(function () {
+        synth.speak(reminderSpeech);
+    }, 300);
+}
+
+
+/* =====================================================
+   MANUAL SPEAK BUTTON
+===================================================== */
+
+function speakCurrentReminder() {
+
+    console.log("Manual Speak button clicked");
+
+    if (currentMedicine !== "") {
+
+        speakReminder(
+            currentMedicine,
+            currentInstruction
+        );
+
+    } 
+    else {
+
+        alert(t("noActiveReminder"));
+
+    }
+}
+
+
+
+/* =====================================================
+   CLOSE REMINDER
+===================================================== */
+
+function closeReminder() {
+
+    const reminderBox =
+        document.getElementById(
+            "liveReminder"
+        );
+
+    reminderBox.style.display =
+        "none";
+
+    if (
+        "speechSynthesis" in window
+    ) {
+
+        window.speechSynthesis.cancel();
+
+    }
+
+    stopAlarm();
+
+    console.log("Reminder closed");
+
+}
+
+
+
+/* =====================================================
+   VOICE REMINDER
+===================================================== */
+
+function speakReminder(medicine, instructions) {
+
+    if (!("speechSynthesis" in window)) {
+        alert("Voice is not supported in this browser.");
+        return;
+    }
+
+    const synth = window.speechSynthesis;
+
+    synth.cancel();
+
+    let message =
+        "It is time to take your medicine. " +
+        medicine;
+
+    if (instructions && instructions.trim() !== "") {
+        message += ". Instructions. " + instructions;
+    }
+
+    const speech =
+        new SpeechSynthesisUtterance(message);
+
+    speech.lang = "en-IN";
+    speech.rate = 0.7;
+    speech.pitch = 1;
+    speech.volume = 1;
+
+    synth.speak(speech);
+}
+
+
+/* =====================================================
+   MANUAL SPEAK BUTTON
+===================================================== */
+
+function speakCurrentReminder() {
+
+    console.log("Manual Speak button clicked");
+
+    if (currentMedicine !== "") {
+
+        // Stop any previous speech
+        if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+        }
+
+        // Small delay before starting again
+        setTimeout(function () {
+
+            speakReminder(
+                currentMedicine,
+                currentInstruction
+            );
+
+        }, 100);
+
+    } else {
+
+        alert(t("noActiveReminder"));
+
+    }
+}
+/* =====================================================
+   CLOSE REMINDER
+===================================================== */
+
+function closeReminder() {
+
+    const reminderBox =
+        document.getElementById(
+            "liveReminder"
+        );
+
+
+    reminderBox.style.display =
+        "none";
+
+
+    if (
+        "speechSynthesis" in window
+    ) {
+
+        window.speechSynthesis.cancel();
+
+    }
+
+}
+
+/* =====================================================
+   ALARM SOUND
+===================================================== */
+
+let audioContext = null;
+let alarmInterval = null;
+let alarmEnabled = false;
+
+function enableAlarm() {
+
+    try {
+
+        audioContext = new (
+            window.AudioContext ||
+            window.webkitAudioContext
+        )();
+
+        audioContext.resume();
+
+        alarmEnabled = true;
+
+        playAlarm();
+
+        alert("Alarm sound enabled successfully!");
+
+        console.log("ALARM ENABLED");
+
+    } catch (error) {
+
+        console.log("Alarm error:", error);
+
+        alert("Unable to enable alarm sound.");
+    }
+}
+
+
+function playAlarm() {
+
+    if (!alarmEnabled || !audioContext) {
+        return;
+    }
+
+    const oscillator =
+        audioContext.createOscillator();
+
+    const gainNode =
+        audioContext.createGain();
+
+    oscillator.type = "sine";
+
+    oscillator.frequency.setValueAtTime(
+        880,
+        audioContext.currentTime
+    );
+
+    gainNode.gain.setValueAtTime(
+        0.3,
+        audioContext.currentTime
+    );
+
+    oscillator.connect(gainNode);
+
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start();
+
+    oscillator.stop(
+        audioContext.currentTime + 0.5
+    );
+}
+
+
+function startAlarm() {
+
+    if (!alarmEnabled) {
+
+        console.log(
+            "Alarm is not enabled. Click Enable Alarm Sound first."
+        );
+
+        return;
+    }
+
+    stopAlarm();
+
+    playAlarm();
+
+    alarmInterval =
+        setInterval(
+            playAlarm,
+            1000
+        );
+}
+
+
+function stopAlarm() {
+
+    if (alarmInterval) {
+
+        clearInterval(alarmInterval);
+
+        alarmInterval = null;
+    }
+}
+
+/* =====================================================
+   START REMINDER CHECK
+===================================================== */
+
+setInterval(
+    checkReminders,
+    1000
+);
+
+
+
+/* =====================================================
+   INITIAL CHECK
+===================================================== */
+
+checkReminders();
+
+
+console.log(
+    "Reminder system started successfully."
+);
+
+
+</script>
+
+
+</body>
+
+</html>

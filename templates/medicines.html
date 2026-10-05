@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Medicines</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <div class="logo">
+            💊 AI Medicine Reminder
+        </div>
+
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/prescription">Prescription</a>
+            <a href="/history">History</a>
+        </div>
+
+    </nav>
+
+
+    <section class="medicines-section">
+
+        <div class="medicines-header">
+
+            <h1>💊 My Medicines</h1>
+
+            <p>
+                View your medicines and their dosage schedules.
+            </p>
+
+        </div>
+
+
+        <div class="medicine-table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Strength</th>
+                        <th>Dosage</th>
+                        <th>Frequency</th>
+                        <th>Duration</th>
+                        <th>Instructions</th>
+                    </tr>
+                </thead>
+
+<tbody>
+
+    {% for medicine in medicines %}
+
+    <tr>
+
+        <td>{{ medicine.medicine_name }}</td>
+
+        <td>{{ medicine.strength }}</td>
+
+        <td>{{ medicine.dosage }}</td>
+
+        <td>{{ medicine.frequency }}</td>
+
+        <td>{{ medicine.duration }}</td>
+
+        <td>{{ medicine.instructions }}</td>
+
+    </tr>
+
+    {% endfor %}
+
+</tbody>
+            </table>
+
+        </div>
+
+    </section>
+
+</body>
+
+</html>
